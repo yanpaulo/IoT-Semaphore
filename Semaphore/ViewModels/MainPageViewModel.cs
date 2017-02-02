@@ -1,25 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Devices.Gpio;
+using Windows.UI.Xaml;
 
 namespace Semaphore.ViewModels
 {
-    public class MainPageViewModel
+    public class MainPageViewModel : INotifyPropertyChanged
     {
-        private PinViewModel[] carroPins, pedestrePins;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        private int displayValue;
-        private PinViewModel[] displayPins;
-        private PinViewModel[] displayControlPins;
-
-        private PinViewModel[][] numbers;
-        
+        #region Private Attributes
         private GpioController gpioController;
-        private GpioPin buttonPin;
+        private PinViewModel[][] _numbers;
+        private PinViewModel[] _digit1Pins;
+        private PinViewModel[] _digit2Pins; 
+        #endregion
 
+        public int DisplayValue { get; set; }
+
+        public GpioPin ButtonPin { get; private set; }
+        public PinViewModel[] CarroPins { get; private set; }
+        public PinViewModel[] PedestrePins { get; private set; }
+        public PinViewModel[] DisplayPins { get; private set; }
+        public PinViewModel[] DisplayControlPins { get; private set; }
+        public PinViewModel[] Digit1Pins
+        {
+            get { return _digit1Pins; }
+            set { _digit1Pins = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Digit1Pins")); }
+        }
+        public PinViewModel[] Digit2Pins
+        {
+            get { return _digit2Pins; }
+            set { _digit2Pins = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Digit2Pins")); }
+        }
+        
         public MainPageViewModel()
         {
             var pins = new List<GpioPin>();
@@ -33,28 +51,56 @@ namespace Semaphore.ViewModels
                 pins.Add(pin);
             }
 
-            carroPins = pins.Take(3).ToViewModelArray(); //Pins 0-2
-            pedestrePins = pins.Skip(3).Take(2).ToViewModelArray(); //Pins 3-4
+            CarroPins = pins.Take(3).ToViewModelArray(); //Pins 0-2
+            PedestrePins = pins.Skip(3).Take(2).ToViewModelArray(); //Pins 3-4
 
-            displayPins = pins.Skip(5).Take(7).ToViewModelArray(); //Pins 5-11
-            displayControlPins = pins.Skip(12).Take(2).ToViewModelArray(); //Pins 12-13
+            DisplayPins = pins.Skip(5).Take(7).ToViewModelArray(); //Pins 5-11
+            DisplayControlPins = pins.Skip(12).Take(2).ToViewModelArray(); //Pins 12-13
 
-            buttonPin = pins.Last(); //Pin 14
-            buttonPin?.SetDriveMode(GpioPinDriveMode.InputPullUp);
+            ButtonPin = pins.Last(); //Pin 14
+            ButtonPin?.SetDriveMode(GpioPinDriveMode.InputPullUp);
 
-            numbers = new PinViewModel[][]
+            _numbers = new PinViewModel[][]
             {
-                new[] { displayPins[0], displayPins[1], displayPins[2], displayPins[4], displayPins[5], displayPins[6] },
-                new[] { displayPins[2], displayPins[5] },
-                new[] { displayPins[1], displayPins[2], displayPins[3], displayPins[4], displayPins[6] },
-                new[] { displayPins[1], displayPins[2], displayPins[3], displayPins[5], displayPins[6] },
-                new[] { displayPins[0], displayPins[2], displayPins[3], displayPins[5] },
-                new[] { displayPins[1], displayPins[0], displayPins[3], displayPins[5], displayPins[6] },
-                new[] { displayPins[0], displayPins[4], displayPins[6], displayPins[6], displayPins[3] },
-                new[] { displayPins[1], displayPins[2], displayPins[5] },
-                new[] { displayPins[0], displayPins[1], displayPins[2], displayPins[3], displayPins[4], displayPins[5], displayPins[6] },
-                new[] { displayPins[0], displayPins[1], displayPins[2], displayPins[3], displayPins[4], displayPins[6] }
+                new[] { DisplayPins[0], DisplayPins[1], DisplayPins[2], DisplayPins[4], DisplayPins[5], DisplayPins[6] },
+                new[] { DisplayPins[2], DisplayPins[5] },
+                new[] { DisplayPins[1], DisplayPins[2], DisplayPins[3], DisplayPins[4], DisplayPins[6] },
+                new[] { DisplayPins[1], DisplayPins[2], DisplayPins[3], DisplayPins[5], DisplayPins[6] },
+                new[] { DisplayPins[0], DisplayPins[2], DisplayPins[3], DisplayPins[5] },
+                new[] { DisplayPins[1], DisplayPins[0], DisplayPins[3], DisplayPins[5], DisplayPins[6] },
+                new[] { DisplayPins[0], DisplayPins[4], DisplayPins[6], DisplayPins[6], DisplayPins[3] },
+                new[] { DisplayPins[1], DisplayPins[2], DisplayPins[5] },
+                new[] { DisplayPins[0], DisplayPins[1], DisplayPins[2], DisplayPins[3], DisplayPins[4], DisplayPins[5], DisplayPins[6] },
+                new[] { DisplayPins[0], DisplayPins[1], DisplayPins[2], DisplayPins[3], DisplayPins[4], DisplayPins[6] }
             };
+
+            Reset();
+
+        }
+
+        public void Reset()
+        {
+            CarroPins.SwitchAll(false);
+            CarroPins[0].IsOn = true;
+
+            PedestrePins.SwitchAll(false);
+            PedestrePins[1].IsOn = true;
+        }
+        
+        public async Task UpdateDisplayPins()
+        {
+            DisplayControlPins.SwitchAll(false);
+
+            DisplayPins.SwitchAll(false);
+            _numbers[DisplayValue / 10].SwitchAll(true);
+            Digit1Pins = DisplayPins;
+            DisplayControlPins[0].IsOn = true;
+
+            await Task.Delay(25);
+            DisplayPins.SwitchAll(false);
+            _numbers[DisplayValue % 10].SwitchAll(true);
+            Digit2Pins = DisplayPins;
+            DisplayControlPins.Invert();
         }
     }
 }

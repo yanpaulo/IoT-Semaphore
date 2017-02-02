@@ -24,56 +24,79 @@ namespace Semaphore
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private GpioController _gpioController;
-        private GpioPin _buttonPin;
+        private GpioController gpioController;
+        private GpioPin buttonPin;
 
-        private PinViewModel[] _carroPins, _pedestrePins;
+        private MainPageViewModel _viewModel;
+        private DispatcherTimer _verdeTimer, _amareloTimer, _vermelhoTimer, _counterTimer;
 
-        private int _displayValue;
-        private PinViewModel[] _displayPins;
-        private PinViewModel[] _displayControlPins;
-
-        private PinViewModel[][] _numbers;
-        
 
         public MainPage()
         {
-            var pins = new List<GpioPin>();
-            _gpioController = GpioController.GetDefault();
-
-            //Inicializa 15 pinos
-            for (int i = 2; i <= 16; i++)
-            {
-                var pin = _gpioController?.OpenPin(i);
-                pin?.SetDriveMode(GpioPinDriveMode.Output);
-                pins.Add(pin);
-            }
             
-            _carroPins = pins.Take(3).ToViewModelArray(); //Pins 0-2
-            _pedestrePins = pins.Skip(3).Take(2).ToViewModelArray(); //Pins 3-4
+            this.DataContext = _viewModel = new MainPageViewModel();
 
-            _displayPins = pins.Skip(5).Take(7).ToViewModelArray(); //Pins 5-11
-            _displayControlPins = pins.Skip(12).Take(2).ToViewModelArray(); //Pins 12-13
+            _verdeTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+            _verdeTimer.Tick += VerdeTimer_Tick;
 
-            _buttonPin = pins.Last(); //Pin 14
-            _buttonPin?.SetDriveMode(GpioPinDriveMode.InputPullUp);
+            _amareloTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+            _amareloTimer.Tick += AmareloTimer_Tick;
 
-            _numbers = new PinViewModel[][]
-            {
-                new[] { _displayPins[0], _displayPins[1], _displayPins[2], _displayPins[4], _displayPins[5], _displayPins[6] },
-                new[] { _displayPins[2], _displayPins[5] },
-                new[] { _displayPins[1], _displayPins[2], _displayPins[3], _displayPins[4], _displayPins[6] },
-                new[] { _displayPins[1], _displayPins[2], _displayPins[3], _displayPins[5], _displayPins[6] },
-                new[] { _displayPins[0], _displayPins[2], _displayPins[3], _displayPins[5] },
-                new[] { _displayPins[1], _displayPins[0], _displayPins[3], _displayPins[5], _displayPins[6] },
-                new[] { _displayPins[0], _displayPins[4], _displayPins[6], _displayPins[6], _displayPins[3] },
-                new[] { _displayPins[1], _displayPins[2], _displayPins[5] },
-                new[] { _displayPins[0], _displayPins[1], _displayPins[2], _displayPins[3], _displayPins[4], _displayPins[5], _displayPins[6] },
-                new[] { _displayPins[0], _displayPins[1], _displayPins[2], _displayPins[3], _displayPins[4], _displayPins[6] }
-            };
+            _vermelhoTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _vermelhoTimer.Tick += VermelhoTimer_Tick;
+
+            _counterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            _counterTimer.Tick += CounterTimer_Tick;
+
+            _viewModel.DisplayValue = 20;
 
             this.InitializeComponent();
         }
+
+        private void VerdeTimer_Tick(object sender, object e)
+        {
+            _viewModel.CarroPins[0].IsOn = false; //Desliga o verde
+            _viewModel.CarroPins[1].IsOn = true; //Liga o amarelo
+            _verdeTimer.Stop();
+            _amareloTimer.Start();
+        }
+        
+        private void AmareloTimer_Tick(object sender, object e)
+        {
+            _viewModel.CarroPins[1].IsOn = false; //Desliga o amarelo
+            _viewModel.CarroPins[2].IsOn = true; //Liga o vermelho
+
+            _viewModel.PedestrePins.Invert(); //Inverte a saída do pedestre
+            
+            _amareloTimer.Stop();
+            _vermelhoTimer.Start();
+        }
+
+        private void VermelhoTimer_Tick(object sender, object e)
+        {
+            if (_viewModel.DisplayValue > 0)
+            {
+                _viewModel.DisplayValue--;
+            }
+            else
+            {
+                _viewModel.Reset();
+                _vermelhoTimer.Stop();
+            }
+        }
+
+        private async void CounterTimer_Tick(object sender, object e)
+        {
+            await _viewModel.UpdateDisplayPins();
+        }
+
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            _verdeTimer.Start();
+        }
+
+
 
     }
     

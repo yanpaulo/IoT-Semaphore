@@ -10,7 +10,7 @@
 
     <Page.Resources>
         <converters:BoolToColorValueConverter x:Name="BoolToColorValueConverter"></converters:BoolToColorValueConverter>
-        
+
         <Style TargetType="Rectangle" x:Name="LedRectangle" >
             <Setter Property="Fill" Value="Cyan"></Setter>
             <Setter Property="Stroke" Value="Black"></Setter>
@@ -89,13 +89,27 @@
                         <ColumnDefinition Width="12"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
 
-                    <Rectangle Grid.Row="0" Grid.Column="1" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="1" Grid.Column="0" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="1" Grid.Column="2" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="2" Grid.Column="1" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="3" Grid.Column="0" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="3" Grid.Column="2" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="4" Grid.Column="1" Style="{StaticResource SegmentRectangle}"></Rectangle>
+                    <Rectangle Grid.Row="0" Grid.Column="1" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit1Pins[0].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="1" Grid.Column="0" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit1Pins[5].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="1" Grid.Column="2" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit1Pins[1].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="2" Grid.Column="1" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit1Pins[6].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="3" Grid.Column="0" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit1Pins[4].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="3" Grid.Column="2" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit1Pins[2].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="4" Grid.Column="1" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit1Pins[3].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
                 </Grid>
 
                 <Grid Grid.Column="3" HorizontalAlignment="Center">
@@ -112,13 +126,27 @@
                         <ColumnDefinition Width="12"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
 
-                    <Rectangle Grid.Row="0" Grid.Column="1" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="1" Grid.Column="0" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="1" Grid.Column="2" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="2" Grid.Column="1" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="3" Grid.Column="0" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="3" Grid.Column="2" Style="{StaticResource SegmentRectangle}"></Rectangle>
-                    <Rectangle Grid.Row="4" Grid.Column="1" Style="{StaticResource SegmentRectangle}"></Rectangle>
+                    <Rectangle Grid.Row="0" Grid.Column="1" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit2Pins[0].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="1" Grid.Column="0" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit2Pins[5].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="1" Grid.Column="2" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit2Pins[1].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="2" Grid.Column="1" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit2Pins[6].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="3" Grid.Column="0" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit2Pins[4].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="3" Grid.Column="2" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit2Pins[2].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
+                    <Rectangle Grid.Row="4" Grid.Column="1" Style="{StaticResource SegmentRectangle}"
+                               Fill="{Binding Path=ScreenDigit2Pins[3].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
+                    </Rectangle>
                 </Grid>
             </Grid>
         </Grid>

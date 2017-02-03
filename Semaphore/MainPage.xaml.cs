@@ -45,11 +45,9 @@ namespace Semaphore
             _vermelhoTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _vermelhoTimer.Tick += VermelhoTimer_Tick;
 
-            _counterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            _counterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(10) };
             _counterTimer.Tick += CounterTimer_Tick;
-
-            _viewModel.DisplayValue = 20;
-
+            
             this.InitializeComponent();
         }
 
@@ -69,7 +67,9 @@ namespace Semaphore
             _viewModel.PedestrePins.Invert(); //Inverte a saída do pedestre
             
             _amareloTimer.Stop();
+            _viewModel.DisplayValue = 20;
             _vermelhoTimer.Start();
+            _counterTimer.Start();
         }
 
         private void VermelhoTimer_Tick(object sender, object e)
@@ -82,6 +82,7 @@ namespace Semaphore
             {
                 _viewModel.Reset();
                 _vermelhoTimer.Stop();
+                _counterTimer.Stop();
             }
         }
 
@@ -93,6 +94,7 @@ namespace Semaphore
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            _viewModel.Reset();
             _verdeTimer.Start();
         }
 

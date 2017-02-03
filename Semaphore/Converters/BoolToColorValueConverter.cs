@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 
@@ -17,7 +18,7 @@ namespace Semaphore.Converters
             var b = value as bool?;
             if (b.HasValue)
             {
-                return new SolidColorBrush(b.Value ? Colors.Blue : Colors.Red);
+                return new SolidColorBrush(b.Value ? Colors.Red : Colors.LightGray);
             }
             else
             {

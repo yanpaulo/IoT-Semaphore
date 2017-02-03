@@ -7,7 +7,7 @@ namespace Semaphore
 {
     public static class PinListExtensions
     {
-        public static void SwitchAll(this PinViewModel[] list, bool value)
+        public static void SwitchAll(this IEnumerable<PinViewModel> list, bool value)
         {
             foreach (var item in list)
             {
@@ -15,7 +15,7 @@ namespace Semaphore
             }
         }
 
-        public static void Invert(this PinViewModel[] list)
+        public static void Invert(this IEnumerable<PinViewModel> list)
         {
             foreach (var item in list)
             {

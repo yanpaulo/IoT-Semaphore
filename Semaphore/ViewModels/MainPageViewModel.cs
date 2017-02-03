@@ -108,14 +108,14 @@ namespace Semaphore.ViewModels
 
             digitNumbers = _numbers[DisplayValue / 10];
             DisplayPins.SwitchAll(false);
-            DisplayPins.Where((p, i) => digitNumbers.Contains(i)).ToArray().SwitchAll(true);
+            DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
             DisplayControlPins[0].IsOn = true;
 
             await Task.Delay(25);
 
             digitNumbers = _numbers[DisplayValue % 10];
             DisplayPins.SwitchAll(false);
-            DisplayPins.Where((p, i) => digitNumbers.Contains(i)).ToArray().SwitchAll(true);
+            DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
             DisplayControlPins.Invert();
         }
 
@@ -128,11 +128,11 @@ namespace Semaphore.ViewModels
                 
                 digitNumbers = _numbers[DisplayValue / 10];
                 ScreenDigit1Pins.SwitchAll(false);
-                ScreenDigit1Pins.Where((p, i) => digitNumbers.Contains(i)).ToArray().SwitchAll(true);
+                ScreenDigit1Pins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
                 
                 digitNumbers = _numbers[DisplayValue % 10];
                 ScreenDigit2Pins.SwitchAll(false);
-                ScreenDigit2Pins.Where((p, i) => digitNumbers.Contains(i)).ToArray().SwitchAll(true);
+                ScreenDigit2Pins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
             }
         }
     }

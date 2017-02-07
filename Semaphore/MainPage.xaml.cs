@@ -28,7 +28,7 @@ namespace Semaphore
         private GpioPin buttonPin;
 
         private MainPageViewModel _viewModel;
-        private DispatcherTimer _verdeTimer, _amareloTimer, _vermelhoTimer, _counterTimer;
+        private DispatcherTimer _verdeTimer, _amareloTimer, _vermelhoTimer;
 
 
         public MainPage()
@@ -45,12 +45,11 @@ namespace Semaphore
             _vermelhoTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _vermelhoTimer.Tick += VermelhoTimer_Tick;
 
-            _counterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(10) };
-            _counterTimer.Tick += CounterTimer_Tick;
+            _viewModel.ButtonPin.ValueChanged += ButtonPin_ValueChanged;
             
             this.InitializeComponent();
         }
-
+        
         private void VerdeTimer_Tick(object sender, object e)
         {
             _viewModel.CarroPins[0].IsOn = false; //Desliga o verde
@@ -65,13 +64,14 @@ namespace Semaphore
             _viewModel.CarroPins[2].IsOn = true; //Liga o vermelho
 
             _viewModel.PedestrePins.Invert(); //Inverte a saída do pedestre
-            
-            _amareloTimer.Stop();
-            _viewModel.DisplayValue = 20;
-            _vermelhoTimer.Start();
-            _counterTimer.Start();
-        }
 
+            _viewModel.DisplayValue = 20;
+            _amareloTimer.Stop();
+            _vermelhoTimer.Start();
+            _viewModel.ShowCounter();
+            
+        }
+        
         private void VermelhoTimer_Tick(object sender, object e)
         {
             if (_viewModel.DisplayValue > 0)
@@ -82,24 +82,29 @@ namespace Semaphore
             {
                 _viewModel.Reset();
                 _vermelhoTimer.Stop();
-                _counterTimer.Stop();
+                _viewModel.HideCounter();
             }
         }
 
-        private async void CounterTimer_Tick(object sender, object e)
+
+        private async void ButtonPin_ValueChanged(GpioPin sender, GpioPinValueChangedEventArgs args)
         {
-            await _viewModel.UpdateDisplayPins();
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                StartSemaphore();
+            });
         }
 
-
         private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            StartSemaphore();
+        }
+
+        private void StartSemaphore()
         {
             _viewModel.Reset();
             _verdeTimer.Start();
         }
-
-
-
     }
     
 }

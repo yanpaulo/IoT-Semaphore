@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Devices.Gpio;
+using Windows.System.Threading;
 using Windows.UI.Xaml;
 
 namespace Semaphore.ViewModels
@@ -18,6 +19,7 @@ namespace Semaphore.ViewModels
         private int[][] _numbers;
         private PinViewModel[] _digit1Pins;
         private PinViewModel[] _digit2Pins;
+        private ThreadPoolTimer _counterTimer;
         #endregion
 
         private int _displayValue;
@@ -51,12 +53,22 @@ namespace Semaphore.ViewModels
             gpioController = GpioController.GetDefault();
 
             //Inicializa 15 pinos
-            for (int i = 2; i <= 16; i++)
+            for (int i = 2; i <= 13; i++)
             {
                 var pin = gpioController?.OpenPin(i);
                 pin?.SetDriveMode(GpioPinDriveMode.Output);
                 pins.Add(pin);
             }
+            for (int i = 17; i <= 18; i++)
+            {
+                var pin = gpioController?.OpenPin(i);
+                pin?.SetDriveMode(GpioPinDriveMode.Output);
+                pins.Add(pin);
+            }
+
+            var pin20 = gpioController?.OpenPin(20);
+            pin20?.SetDriveMode(GpioPinDriveMode.Output);
+            pins.Add(pin20);
 
             CarroPins = pins.Take(3).ToViewModelArray(); //Pins 0-2
             PedestrePins = pins.Skip(3).Take(2).ToViewModelArray(); //Pins 3-4
@@ -100,23 +112,35 @@ namespace Semaphore.ViewModels
             ScreenDigit1Pins.SwitchAll(false);
             ScreenDigit2Pins.SwitchAll(false);
         }
+
+        public void ShowCounter()
+        {
+            _counterTimer = ThreadPoolTimer.CreatePeriodicTimer(CounterTimer_Tick, TimeSpan.FromMilliseconds(1));
+        }
+
+        public void HideCounter()
+        {
+            _counterTimer.Cancel();
+            DisplayControlPins.SwitchAll(false);
+        }
         
-        public async Task UpdateDisplayPins()
+        private async Task UpdateDisplayPins()
         {
             int[] digitNumbers;
-            DisplayControlPins.SwitchAll(false);
 
             digitNumbers = _numbers[DisplayValue / 10];
-            DisplayPins.SwitchAll(false);
+            DisplayControlPins[1].IsOn = true;
+            DisplayControlPins[0].IsOn = false;
             DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
-            DisplayControlPins[0].IsOn = true;
-
-            await Task.Delay(25);
+            DisplayPins.Where((p, i) => !digitNumbers.Contains(i)).SwitchAll(false);
+            
+            await Task.Delay(TimeSpan.FromMilliseconds(0.5));
 
             digitNumbers = _numbers[DisplayValue % 10];
-            DisplayPins.SwitchAll(false);
-            DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
             DisplayControlPins.Invert();
+            DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
+            DisplayPins.Where((p, i) => !digitNumbers.Contains(i)).SwitchAll(false);
+            
         }
 
 
@@ -134,6 +158,12 @@ namespace Semaphore.ViewModels
                 ScreenDigit2Pins.SwitchAll(false);
                 ScreenDigit2Pins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
             }
+        }
+
+
+        private async void CounterTimer_Tick(ThreadPoolTimer t)
+        {
+            await UpdateDisplayPins();
         }
     }
 }

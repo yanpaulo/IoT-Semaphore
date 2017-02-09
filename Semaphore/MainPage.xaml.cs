@@ -24,13 +24,9 @@ namespace Semaphore
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private GpioController gpioController;
-        private GpioPin buttonPin;
-
         private MainPageViewModel _viewModel;
         private DispatcherTimer _verdeTimer, _amareloTimer, _vermelhoTimer;
-
-
+        
         public MainPage()
         {
             
@@ -45,7 +41,10 @@ namespace Semaphore
             _vermelhoTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _vermelhoTimer.Tick += VermelhoTimer_Tick;
 
-            _viewModel.ButtonPin.ValueChanged += ButtonPin_ValueChanged;
+            if (_viewModel.ButtonPin != null)
+            {
+                _viewModel.ButtonPin.ValueChanged += ButtonPin_ValueChanged; 
+            }
             
             this.InitializeComponent();
         }

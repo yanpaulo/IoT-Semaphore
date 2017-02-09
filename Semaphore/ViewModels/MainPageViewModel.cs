@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Devices.Gpio;
 using Windows.System.Threading;
@@ -15,22 +16,15 @@ namespace Semaphore.ViewModels
         public event PropertyChangedEventHandler PropertyChanged;
 
         #region Private Attributes
+        private int _displayValue;
         private GpioController gpioController;
         private int[][] _numbers;
         private PinViewModel[] _digit1Pins;
         private PinViewModel[] _digit2Pins;
-        private ThreadPoolTimer _counterTimer;
+        private CancellationTokenSource _counterCancelationTokenSource;
         #endregion
-
-        private int _displayValue;
-
-        public int DisplayValue
-        {
-            get { return _displayValue; }
-            set { _displayValue = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("DisplayValue")); }
-        }
-
-
+        
+        #region Properties
         public GpioPin ButtonPin { get; private set; }
         public PinViewModel[] CarroPins { get; private set; }
         public PinViewModel[] PedestrePins { get; private set; }
@@ -46,7 +40,13 @@ namespace Semaphore.ViewModels
             get { return _digit2Pins; }
             set { _digit2Pins = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Digit2Pins")); }
         }
-        
+        public int DisplayValue
+        {
+            get { return _displayValue; }
+            set { _displayValue = value; UpdateScreenDigits(); }
+        } 
+        #endregion
+
         public MainPageViewModel()
         {
             var pins = new List<GpioPin>();
@@ -97,9 +97,8 @@ namespace Semaphore.ViewModels
             };
 
             Reset();
-            this.PropertyChanged += MainPageViewModel_PropertyChanged;
         }
-        
+
         public void Reset()
         {
             CarroPins.SwitchAll(false);
@@ -115,55 +114,46 @@ namespace Semaphore.ViewModels
 
         public void ShowCounter()
         {
-            _counterTimer = ThreadPoolTimer.CreatePeriodicTimer(CounterTimer_Tick, TimeSpan.FromMilliseconds(1));
+            _counterCancelationTokenSource = new CancellationTokenSource();
+            
+            Task.Run(() =>
+            {
+                DisplayControlPins[0].IsOn = true;
+                DisplayControlPins[1].IsOn = false;
+                int[] digitNumbers;
+                while (!_counterCancelationTokenSource.Token.IsCancellationRequested)
+                {
+                    digitNumbers = _numbers[DisplayValue / 10];
+                    DisplayPins.SwitchAll(false);
+                    DisplayControlPins.Invert();
+                    DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
+                    Task.Delay(TimeSpan.FromTicks(1)).Wait();
+
+                    digitNumbers = _numbers[DisplayValue % 10];
+                    DisplayPins.SwitchAll(false);
+                    DisplayControlPins.Invert();
+                    DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
+                    Task.Delay(TimeSpan.FromTicks(1)).Wait();
+                }
+                DisplayControlPins.SwitchAll(true);
+
+            }, _counterCancelationTokenSource.Token);
         }
 
         public void HideCounter()
         {
-            _counterTimer.Cancel();
-            DisplayControlPins.SwitchAll(false);
+            _counterCancelationTokenSource.Cancel();
         }
         
-        private async Task UpdateDisplayPins()
+        private void UpdateScreenDigits()
         {
-            int[] digitNumbers;
-
-            digitNumbers = _numbers[DisplayValue / 10];
-            DisplayControlPins[1].IsOn = true;
-            DisplayControlPins[0].IsOn = false;
-            DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
-            DisplayPins.Where((p, i) => !digitNumbers.Contains(i)).SwitchAll(false);
-            
-            await Task.Delay(TimeSpan.FromMilliseconds(0.5));
+            int[] digitNumbers = _numbers[DisplayValue / 10];
+            ScreenDigit1Pins.SwitchAll(false);
+            ScreenDigit1Pins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
 
             digitNumbers = _numbers[DisplayValue % 10];
-            DisplayControlPins.Invert();
-            DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
-            DisplayPins.Where((p, i) => !digitNumbers.Contains(i)).SwitchAll(false);
-            
-        }
-
-
-        private void MainPageViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "DisplayValue")
-            {
-                int[] digitNumbers;
-                
-                digitNumbers = _numbers[DisplayValue / 10];
-                ScreenDigit1Pins.SwitchAll(false);
-                ScreenDigit1Pins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
-                
-                digitNumbers = _numbers[DisplayValue % 10];
-                ScreenDigit2Pins.SwitchAll(false);
-                ScreenDigit2Pins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
-            }
-        }
-
-
-        private async void CounterTimer_Tick(ThreadPoolTimer t)
-        {
-            await UpdateDisplayPins();
+            ScreenDigit2Pins.SwitchAll(false);
+            ScreenDigit2Pins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
         }
     }
 }

@@ -47,14 +47,13 @@ namespace Semaphore.ViewModels
             get { return _displayValue; }
             set { _displayValue = value; UpdateScreenDigits(); }
         }
-        #endregion
-        
+
         public bool IsButtonEnabled
         {
             get { return _isButtonEnabled; }
             set { _isButtonEnabled = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsButtonEnabled")); }
         }
-
+        #endregion
 
         public MainPageViewModel()
         {

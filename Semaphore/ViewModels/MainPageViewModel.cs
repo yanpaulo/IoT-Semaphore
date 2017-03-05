@@ -132,7 +132,7 @@ namespace Semaphore.ViewModels
                 DisplayControlPins[1].IsOn = false;
                 int[] digitNumbers;
                 var sw = new Stopwatch();
-                var ticks = 5;
+                var milissec = 5;
                 while (!_counterCancelationTokenSource.Token.IsCancellationRequested)
                 {
                     digitNumbers = _numbers[DisplayValue / 10];
@@ -140,14 +140,14 @@ namespace Semaphore.ViewModels
                     DisplayControlPins.Invert();
                     DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
                     sw.Restart();
-                    while (sw.ElapsedMilliseconds < ticks) ;
+                    while (sw.ElapsedMilliseconds < milissec) ;
 
                     digitNumbers = _numbers[DisplayValue % 10];
                     DisplayPins.SwitchAll(false);
                     DisplayControlPins.Invert();
                     DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
                     sw.Restart();
-                    while (sw.ElapsedMilliseconds < ticks) ;
+                    while (sw.ElapsedMilliseconds < milissec) ;
                 }
                 sw.Stop();
                 DisplayPins.SwitchAll(false);

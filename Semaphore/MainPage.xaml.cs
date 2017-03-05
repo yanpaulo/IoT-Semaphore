@@ -79,19 +79,20 @@ namespace Semaphore
             }
             else
             {
-                _viewModel.Reset();
                 _vermelhoTimer.Stop();
-                _viewModel.HideCounter();
+                _viewModel.Reset();
             }
         }
-
-
+        
         private async void ButtonPin_ValueChanged(GpioPin sender, GpioPinValueChangedEventArgs args)
         {
-            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            if (_viewModel.IsButtonEnabled && args.Edge == GpioPinEdge.FallingEdge)
             {
-                StartSemaphore();
-            });
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    {
+                        StartSemaphore();
+                    }); 
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -102,6 +103,7 @@ namespace Semaphore
         private void StartSemaphore()
         {
             _viewModel.Reset();
+            _viewModel.IsButtonEnabled = false;
             _verdeTimer.Start();
         }
     }

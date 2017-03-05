@@ -65,7 +65,7 @@
                 <Rectangle Style="{StaticResource LedRectangle}"
                            Fill="{Binding Path=PedestrePins[0].IsOn,Converter={StaticResource BoolToColorValueConverter},FallbackValue=Cyan}">
                 </Rectangle>
-                <Button HorizontalAlignment="Center" Width="80" Click="Button_Click">Ativar</Button>
+                <Button HorizontalAlignment="Center" Width="80" IsEnabled="{Binding IsButtonEnabled}" Click="Button_Click">Ativar</Button>
             </StackPanel>
             <Grid Grid.Column="2">
                 <Grid.ColumnDefinitions>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -17,6 +18,7 @@ namespace Semaphore.ViewModels
 
         #region Private Attributes
         private int _displayValue;
+        private bool _isButtonEnabled;
         private GpioController gpioController;
         private int[][] _numbers;
         private PinViewModel[] _digit1Pins;
@@ -44,8 +46,15 @@ namespace Semaphore.ViewModels
         {
             get { return _displayValue; }
             set { _displayValue = value; UpdateScreenDigits(); }
-        } 
+        }
         #endregion
+        
+        public bool IsButtonEnabled
+        {
+            get { return _isButtonEnabled; }
+            set { _isButtonEnabled = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsButtonEnabled")); }
+        }
+
 
         public MainPageViewModel()
         {
@@ -106,35 +115,43 @@ namespace Semaphore.ViewModels
 
             PedestrePins.SwitchAll(false);
             PedestrePins[1].IsOn = true;
-
-            DisplayPins.SwitchAll(false);
+            
             ScreenDigit1Pins.SwitchAll(false);
             ScreenDigit2Pins.SwitchAll(false);
+
+            IsButtonEnabled = true;
+
+            HideCounter();
         }
 
         public void ShowCounter()
         {
             _counterCancelationTokenSource = new CancellationTokenSource();
-            
             Task.Run(() =>
             {
                 DisplayControlPins[0].IsOn = true;
                 DisplayControlPins[1].IsOn = false;
                 int[] digitNumbers;
+                var sw = new Stopwatch();
+                var ticks = 5;
                 while (!_counterCancelationTokenSource.Token.IsCancellationRequested)
                 {
                     digitNumbers = _numbers[DisplayValue / 10];
                     DisplayPins.SwitchAll(false);
                     DisplayControlPins.Invert();
                     DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
-                    Task.Delay(TimeSpan.FromTicks(1)).Wait();
+                    sw.Restart();
+                    while (sw.ElapsedMilliseconds < ticks) ;
 
                     digitNumbers = _numbers[DisplayValue % 10];
                     DisplayPins.SwitchAll(false);
                     DisplayControlPins.Invert();
                     DisplayPins.Where((p, i) => digitNumbers.Contains(i)).SwitchAll(true);
-                    Task.Delay(TimeSpan.FromTicks(1)).Wait();
+                    sw.Restart();
+                    while (sw.ElapsedMilliseconds < ticks) ;
                 }
+                sw.Stop();
+                DisplayPins.SwitchAll(false);
                 DisplayControlPins.SwitchAll(true);
 
             }, _counterCancelationTokenSource.Token);
@@ -142,7 +159,7 @@ namespace Semaphore.ViewModels
 
         public void HideCounter()
         {
-            _counterCancelationTokenSource.Cancel();
+            _counterCancelationTokenSource?.Cancel();
         }
         
         private void UpdateScreenDigits()
